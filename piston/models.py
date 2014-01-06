@@ -3,7 +3,7 @@ import urllib, time, urlparse
 # Django imports
 from django.db.models.signals import post_save, post_delete
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail, mail_admins
 
 # Piston imports
@@ -22,7 +22,7 @@ CONSUMER_STATES = (
 )
 
 def generate_random(length=SECRET_SIZE):
-    return User.objects.make_random_password(length=length)
+    return get_user_model().objects.make_random_password(length=length)
 
 class Nonce(models.Model):
     token_key = models.CharField(max_length=KEY_SIZE)
@@ -41,7 +41,7 @@ class Consumer(models.Model):
     secret = models.CharField(max_length=SECRET_SIZE)
 
     status = models.CharField(max_length=16, choices=CONSUMER_STATES, default='pending')
-    user = models.ForeignKey(User, null=True, blank=True, related_name='consumers')
+    user = models.ForeignKey(get_user_model(), null=True, blank=True, related_name='consumers')
 
     objects = ConsumerManager()
         
@@ -59,7 +59,7 @@ class Consumer(models.Model):
         c.user = some_user_object
         c.generate_random_codes()
         """
-        key = User.objects.make_random_password(length=KEY_SIZE)
+        key = get_user_model().objects.make_random_password(length=KEY_SIZE)
         secret = generate_random(SECRET_SIZE)
 
         while Consumer.objects.filter(key__exact=key, secret__exact=secret).count():
@@ -82,7 +82,7 @@ class Token(models.Model):
     timestamp = models.IntegerField(default=long(time.time()))
     is_approved = models.BooleanField(default=False)
     
-    user = models.ForeignKey(User, null=True, blank=True, related_name='tokens')
+    user = models.ForeignKey(get_user_model(), null=True, blank=True, related_name='tokens')
     consumer = models.ForeignKey(Consumer)
     
     callback = models.CharField(max_length=255, null=True, blank=True)
@@ -109,7 +109,7 @@ class Token(models.Model):
         return urllib.urlencode(token_dict)
 
     def generate_random_codes(self):
-        key = User.objects.make_random_password(length=KEY_SIZE)
+        key = get_user_model().objects.make_random_password(length=KEY_SIZE)
         secret = generate_random(SECRET_SIZE)
 
         while Token.objects.filter(key__exact=key, secret__exact=secret).count():
