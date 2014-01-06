@@ -9,10 +9,24 @@ except ImportError:
     from setuptools import setup, find_packages
 
 import os
+import re
+
+# read the current version from _version.  We're opening the file
+# and parsing the version string manually to avoid importing the package
+# when building the package
+#
+VERSIONFILE = "piston/_version.py"
+verstrline = open(VERSIONFILE, "rt").read()
+VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
+mo = re.search(VSRE, verstrline, re.M)
+if mo:
+    verstr = mo.group(1)
+else:
+    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
 
 setup(
     name = "django-piston",
-    version = "0.2.5.11",
+    version = verstr,
     url = 'http://bitbucket.org/jespern/django-piston/wiki/Home',
 	download_url = 'http://bitbucket.org/jespern/django-piston/downloads/',
     license = 'BSD',

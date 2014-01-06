@@ -9,9 +9,7 @@ from django.utils.translation import ugettext as _
 from django.template import loader, TemplateDoesNotExist
 from django.contrib.sites.models import Site
 from decorator import decorator
-
-
-__version__ = '0.2.5.8'
+from _version import __version__
 
 
 def get_version():
