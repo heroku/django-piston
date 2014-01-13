@@ -36,7 +36,8 @@ class rc_factory(object):
                  NOT_HERE=('Gone', 410),
                  INTERNAL_ERROR=('Internal Error', 500),
                  NOT_IMPLEMENTED=('Not Implemented', 501),
-                 THROTTLED=('Throttled', 503))
+                 THROTTLED=('Throttled', 503),
+                 NETWORK_AUTHENTICATION_REQUIRED=('Network Authentication Required' 511))
 
     def __getattr__(self, attr):
         """
