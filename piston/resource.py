@@ -306,8 +306,6 @@ class Resource(object):
             exc_type, exc_value, tb = sys.exc_info()
             rep = ExceptionReporter(request, exc_type, exc_value, tb.tb_next)
 
-            logger.error(format_error('\n'.join(rep.format_exception())))
-
             if self.email_errors:
                 self.email_exception(rep)
             if self.display_errors:

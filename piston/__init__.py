@@ -13,3 +13,8 @@ except ImportError:
 else:
     for p in __path__:
         modulefinder.AddPackagePath(__name__, p)
+
+try:
+	from _version import __version__
+except:
+	pass
