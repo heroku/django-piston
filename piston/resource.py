@@ -21,7 +21,7 @@ CHALLENGE = object()
 try:
     import structlog
     logger = structlog.get_logger()
-except
+except:
     import logging
     logger = logging.get_logger(__name__)
 
