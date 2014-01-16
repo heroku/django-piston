@@ -18,6 +18,13 @@ from utils import rc, format_error, translate_mime, MimerDataException
 
 CHALLENGE = object()
 
+try:
+    import structlog
+    logger = structlog.get_logger()
+except
+    import logging
+    logger = logging.get_logger(__name__)
+
 
 class Resource(object):
     """
@@ -295,8 +302,12 @@ class Resource(object):
             If `PISTON_DISPLAY_ERRORS` is not enabled, the caller will
             receive a basic "500 Internal Server Error" message.
             """
+
             exc_type, exc_value, tb = sys.exc_info()
             rep = ExceptionReporter(request, exc_type, exc_value, tb.tb_next)
+
+            logger.error(format_error('\n'.join(rep.format_exception()))))
+
             if self.email_errors:
                 self.email_exception(rep)
             if self.display_errors:
