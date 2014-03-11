@@ -1,7 +1,6 @@
 import binascii
 import logging
 
-import oauth2  # third party lib
 import oauth
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import User, AnonymousUser
@@ -330,81 +329,3 @@ class OAuthAuthentication(object):
 
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
-
-
-class OAuth2LeggedAuthentication(object):
-    """
-    Two-leggeed OAuth authentication.
-
-    Based on:
-
-    piston.authentication.OAuthAuthentication
-    http://philipsoutham.com/post/2172924723/two-legged-oauth-in-python
-    https://github.com/simplegeo/python-oauth2/blob/master/oauth2/__init__.py
-    http://status.smugmug.com/documentation/examples
-    http://stackoverflow.com/questions/3587454/oauth-posting-json
-    http://oauth.net/core/1.0/#anchor14
-    http://sites.google.com/site/oauthgoog/2leggedoauth/2opensocialrestapi
-
-    """
-
-    oauth_server = oauth2.Server(signature_methods={
-            # Supported signature methods
-            'HMAC-SHA1': oauth2.SignatureMethod_HMAC_SHA1(),
-            #'PLAINTEXT': oauth2.SignatureMethod_PLAINTEXT(),
-        })
-
-    def __init__(self, realm='API'):
-        self.realm = realm
-        #self.builder = oauth.build_authenticate_header
-
-    def is_authenticated(self, request):
-        """
-        Checks whether the required parameters are either in
-        the http-authorization header sent by some clients,
-        which is by the way the preferred method according to
-        OAuth spec, but otherwise fall back to `GET` and `POST`.
-
-        Checks whether a means of specifying authentication
-        is provided, and if so, if it is a valid token.
-
-        If authenticate successful, the user attribute on request
-        is set.
-        """
-        auth_header = request.META
-        if 'HTTP_AUTHORIZATION' in auth_header and not 'Authorization' in auth_header:
-            auth_header['Authorization'] = auth_header['HTTP_AUTHORIZATION']
-
-        req = oauth2.Request.from_request(request.method,
-                                          request.build_absolute_uri(request.path),
-                                          auth_header, dict(request.REQUEST))
-        if not req:
-            return False
-
-        try:
-            consumer = Consumer.objects.get(key=req.get('oauth_consumer_key'))
-        except Consumer.DoesNotExist:
-            msg = 'OAuth2Legged failed to find the Consumer with key %s' % req.get('oauth_consumer_key')
-            logger.error(msg)
-            return False
-
-        try:
-            self.oauth_server.verify_request(req, consumer, None)
-        except oauth2.Error, e:
-            msg = 'OAuth2Legged failed verify signed request for consumer(key=%s, secret=%s) error: %s' % (consumer.key, consumer.secret, e)
-            logger.error(msg)
-            return False
-        request.user = consumer.user
-        return True
-
-    def challenge(self):
-        """
-        Returns a 401 response with a small bit on
-
-        As as two-legged auth doesn't have the "Human" part,
-        Is just a 401 (Unauthorized) response.
-        """
-        return HttpResponseUnauthorized()
-
-
-
